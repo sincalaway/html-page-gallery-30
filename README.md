@@ -1,0 +1,89 @@
+# THIRTY — Interface Specimen Room
+
+> **30 个可直接打开、可继续改造的当代 HTML 页面。**
+
+THIRTY 将网页设计趋势整理成一座可浏览的“界面标本室”。项目提供一个 React 画廊入口，以及 **30 个完全独立的 HTML 页面**；每个示例均包含自身的 HTML、CSS 与少量原生 JavaScript，不依赖构建步骤即可单独在浏览器中查看。
+
+## 内容与结构
+
+| 内容 | 位置 | 用途 |
+| --- | --- | --- |
+| 画廊首页与预览器 | `client/src/` | 分类、搜索、查看三十个完整页面。 |
+| 独立 HTML 页面 | `client/public/pages/` | 可直接访问或复制到其他项目的最终页面文件。 |
+| 页面生成器 | `scripts/build-pages.mjs` | 将三十条页面定义写入各自的 `index.html`。 |
+| 设计构想 | `ideas.md` | 记录选定的“界面标本室”风格与策展目录。 |
+
+每个原始页面可从以下路径直接访问：
+
+```text
+/pages/01-aster/index.html
+/pages/02-folklore/index.html
+...
+/pages/30-atlas/index.html
+```
+
+## 页面目录
+
+| 编号 | 页面 | 类别 | 核心风格 |
+| --- | --- | --- | --- |
+| 01 | Aster | 科技 | AI、沉浸式产品视觉、模块化指标 |
+| 02 | Folklore | 创意 | 编辑排版、非对称作品索引 |
+| 03 | Form & Field | 生活方式 | 手作质感、柔性电商 |
+| 04 | Strata | 金融 | 深色仪表盘、数据叙事 |
+| 05 | Orbital | 时尚 | 奢侈极简、时装编辑感 |
+| 06 | Stillwater | 健康 | 冥想、自然色、呼吸留白 |
+| 07 | Plinth | 建筑 | 瑞士网格、工程标尺 |
+| 08 | Good Grains | 餐饮 | 复古咖啡、暖色包装视觉 |
+| 09 | Clove | 美妆 | 多巴胺色彩、柔性产品舞台 |
+| 10 | Loop | 文化 | 音乐节、动感排版、海报构图 |
+| 11 | Fable | 文化 | 独立书店、文学编辑感 |
+| 12 | Helm | 科技 | 新粗野主义、隐私工具 |
+| 13 | Mira | 旅行 | 路线故事、地图式叙事 |
+| 14 | Rooted | 生活方式 | 植物订阅、可持续提示 |
+| 15 | Tactile | 家居 | 材质感、家具电商 |
+| 16 | Pixelkite | 游戏 | 像素 UI、冒险叙事 |
+| 17 | Momentum | 运动 | 跑步社区、运动数据 |
+| 18 | Sora | 酒店 | 日式山居、克制留白 |
+| 19 | Nami | 餐饮 | 现代餐厅、食材拼贴 |
+| 20 | Qubit | 科技 | 机器人、未来工业风 |
+| 21 | Terra | 公益 | 气候数据、影响路径 |
+| 22 | Playbook | 教育 | 游戏化学习、鲜明色块 |
+| 23 | Meridian | 创意 | 设计咨询、抽象案例研究 |
+| 24 | Alloy | 时尚 | 眼镜、镜面金属、单品展示 |
+| 25 | Slowhouse | 酒店 | 电影画幅、慢旅行体验 |
+| 26 | Cinder | 美妆 | 香氛、黑金感、层叠文案 |
+| 27 | Openhand | 公益 | 社区行动、人文叙事 |
+| 28 | Secondo | 餐饮 | 调酒空间、夜间 editorial |
+| 29 | Tonic | 运动 | 高性能训练、动态数据 |
+| 30 | Atlas | 旅行 | 探索工具、任务地图 |
+
+## 本地运行
+
+项目使用 React、Vite、Tailwind CSS 4 和 Wouter 构建画廊外壳。请先安装 Node.js 22+ 与 pnpm，然后执行：
+
+```bash
+pnpm install
+pnpm dev
+```
+
+如修改了 `scripts/build-pages.mjs` 中的页面定义，可重新生成所有独立文件：
+
+```bash
+node scripts/build-pages.mjs
+```
+
+生产验证命令如下：
+
+```bash
+pnpm check
+pnpm build
+```
+
+## 设计说明
+
+画廊采用**瑞士国际主义排版与当代数字展览设计**的组合：深墨色框架、信号橘高亮、明确的双层编号与超大裁切字标，确保三十种独立风格在同一目录中仍拥有清晰秩序。示例覆盖沉浸式视觉、实验性导航、醒目字体、深色模式、轻量动效、粗野主义和可持续体验等近年常见的网页方向。[1] [2]
+
+### 参考资料
+
+[1]: https://www.figma.com/resource-library/web-design-trends/ "Figma：Top web design trends for 2026"
+[2]: https://www.zoho.com/landingpage/landing-page-design-trends.html "Zoho LandingPage：10 proven landing page design trends for 2026"
