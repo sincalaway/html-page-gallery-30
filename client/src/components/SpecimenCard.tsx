@@ -36,7 +36,7 @@ function AbstractPreview({ page, featured }: { page: GalleryPage; featured: bool
       <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(0,0,0,.03),rgba(0,0,0,.18))]" />
       {!image ? <SpecimenMotif kind={page.kind} accent={accent} signal={signal} /> : null}
       <div className="relative flex h-full flex-col justify-between">
-        <div className="flex items-start justify-between text-[8px] font-bold uppercase tracking-[.18em] opacity-75"><span>{page.category}</span><span>80/{page.id}</span></div>
+        <div className="flex items-start justify-between text-[8px] font-bold uppercase tracking-[.18em] opacity-75"><span>{page.category}</span><span>82/{page.id}</span></div>
         <div><div className="font-display text-[clamp(1.55rem,4vw,3.8rem)] font-bold leading-none tracking-[-.08em]" style={{ color: image ? "white" : accent }}>{page.name}</div><div className="mt-3 flex h-1.5 w-full overflow-hidden">{page.colors.map((color) => <i key={color} className="h-full flex-1" style={{ background: color }} />)}</div></div>
       </div>
     </div>
@@ -48,7 +48,7 @@ export function SpecimenCard({ page, featured = false, poster = false }: { page:
     <Link href={`/showcase/${page.slug}`} className={`gallery-card group block outline-none ${featured ? "featured" : ""} ${poster ? "poster" : ""}`}>
       <article className="specimen-card border-t border-white/20 pt-3 transition duration-200 ease-[cubic-bezier(.23,1,.32,1)] group-hover:-translate-y-1 group-focus-visible:-translate-y-1 group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-offset-4 group-focus-visible:outline-[#FF5D22]">
         <AbstractPreview page={page} featured={featured} />
-        <div className="mt-3 flex items-start justify-between gap-3"><div><div className="font-mono text-[10px] tracking-[.15em] text-white/45">{page.id}/80 · {page.category.toUpperCase()}</div><h2 className="mt-1 font-display text-xl font-bold tracking-[-.055em] text-white">{page.name}</h2></div><span className="mt-1 grid h-8 w-8 shrink-0 place-items-center border border-white/25 text-white transition group-hover:border-[#FF5D22] group-hover:bg-[#FF5D22] group-hover:text-[#0B0F14]"><ArrowUpRight size={15} strokeWidth={2.4} /></span></div>
+        <div className="mt-3 flex items-start justify-between gap-3"><div><div className="font-mono text-[10px] tracking-[.15em] text-white/45">{page.id}/82 · {page.category.toUpperCase()}</div><h2 className="mt-1 font-display text-xl font-bold tracking-[-.055em] text-white">{page.name}</h2></div><span className="mt-1 grid h-8 w-8 shrink-0 place-items-center border border-white/25 text-white transition group-hover:border-[#FF5D22] group-hover:bg-[#FF5D22] group-hover:text-[#0B0F14]"><ArrowUpRight size={15} strokeWidth={2.4} /></span></div>
         <p className="mt-2 max-w-sm text-sm leading-5 text-white/56">{page.description}</p>
         <div className="mt-3 flex flex-wrap gap-1.5">{page.tags.map((tag) => <span className="border border-white/15 px-1.5 py-0.5 font-mono text-[9px] text-white/55" key={tag}>{tag}</span>)}</div>
       </article>

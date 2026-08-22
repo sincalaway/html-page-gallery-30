@@ -3,6 +3,7 @@
  * Quiet ink-black curatorial frame; every page acts as a distinct, highly legible design specimen.
  */
 import { interactivePages } from "./interactivePages";
+import { toolPages } from "./toolPages";
 
 export type GalleryPage = {
   id: string;
@@ -52,5 +53,5 @@ export const originalGalleryPages: GalleryPage[] = [
   { id: "30", slug: "atlas", name: "Atlas", category: "旅行", kind: "travel", description: "探索工具页，用地图化导航、任务卡和沉浸式地点叙事收束目录。", tags: ["Explore", "Map", "Adventure"], colors: ["#0E2941", "#D7E4DD", "#F56A43"] },
 ];
 
-export const galleryPages: GalleryPage[] = [...originalGalleryPages, ...interactivePages];
+export const galleryPages: GalleryPage[] = [...originalGalleryPages, ...interactivePages, ...toolPages];
 export const galleryCategories = ["全部", ...Array.from(new Set(galleryPages.map((page) => page.category)))];

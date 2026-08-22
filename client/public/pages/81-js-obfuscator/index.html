@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5fbff" />
+    <title>JavaScript 混淆工坊 — 本地代码处理</title>
+    <style>
+      /* Design reminder — faithful functional homage: a clean white workbench, blue signal color, tabbed source/output flow and four compact option columns. */
+      :root { --ink:#172036; --muted:#68728a; --line:#dce6f1; --wash:#f5fbff; --blue:#21a7ea; --cyan:#55d9cf; --navy:#10213c; --orange:#ff8b5d; }
+      * { box-sizing:border-box; } body { margin:0; min-height:100vh; color:var(--ink); font-family:ui-sans-serif,system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:radial-gradient(circle at 13% 2%,#dcf6ff 0,transparent 23rem),linear-gradient(180deg,#fbfdff 0%,#edf5fb 100%); }
+      .shell { width:min(1280px,calc(100% - 36px)); margin:0 auto; padding:28px 0 50px; }.nav { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:26px; }.brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink); }.brand-mark { display:grid; place-items:center; width:34px; height:34px; border:2px solid var(--blue); color:var(--blue); font-weight:900; font-size:18px; transform:skewX(-12deg); }.brand-copy strong { display:block; font-size:13px; letter-spacing:.08em; }.brand-copy span,.eyebrow { font:10px/1 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted); letter-spacing:.14em; text-transform:uppercase; }.nav a:last-child { color:var(--muted); font:11px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.08em; text-decoration:none; border-bottom:1px solid var(--line); padding-bottom:4px; }.hero { padding:26px 0 28px; border-bottom:1px solid var(--line); }.hero-grid { display:grid; grid-template-columns:1fr auto; gap:20px; align-items:end; }.hero h1 { margin:8px 0 0; color:var(--blue); letter-spacing:-.08em; font-size:clamp(42px,6vw,72px); line-height:.85; }.hero p { margin:0; max-width:450px; color:var(--muted); line-height:1.6; font-size:14px; }.privacy { padding:9px 11px; border:1px solid #bcecf4; color:#177d8f; background:#e9fbff; font:10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.06em; }
+      .tabs { display:flex; gap:4px; margin-top:24px; border-bottom:1px solid var(--line); }.tab { position:relative; border:0; color:var(--muted); background:transparent; padding:13px 17px; font-size:13px; cursor:pointer; }.tab.active { color:var(--blue); font-weight:800; }.tab.active::after { content:""; position:absolute; bottom:-1px; left:12px; right:12px; height:3px; background:var(--blue); }.panel { display:none; padding-top:18px; }.panel.active { display:block; }.editor { min-height:290px; width:100%; resize:vertical; padding:18px; border:1px solid #bdd1e2; outline:0; color:#22334a; background:#fff; font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; box-shadow:0 16px 36px rgba(41,92,125,.08); }.editor:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(33,167,234,.12); }.file-drop { min-height:290px; display:grid; place-items:center; text-align:center; border:1px dashed #91cbe6; background:linear-gradient(135deg,rgba(85,217,207,.1),rgba(33,167,234,.04)); }.file-drop strong { display:block; margin-bottom:8px; font-size:18px; }.file-drop p { color:var(--muted); font-size:13px; }.file-drop input { display:none; }.file-drop label { display:inline-block; margin-top:10px; padding:10px 14px; background:var(--blue); color:white; cursor:pointer; font-size:12px; font-weight:800; }.workbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0 25px; }.action { border:0; padding:13px 18px; background:linear-gradient(135deg,var(--blue),#2d84ea); box-shadow:0 12px 20px rgba(33,167,234,.24); color:#fff; cursor:pointer; font-weight:900; font-size:14px; }.action:hover { filter:brightness(1.05); transform:translateY(-1px); }.action:active { transform:scale(.98); }.status { color:var(--muted); font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; }.output-actions { display:flex; gap:8px; }.quiet { border:1px solid var(--line); background:white; color:var(--ink); padding:9px 11px; cursor:pointer; font-size:12px; }.quiet:hover { border-color:var(--blue); color:var(--blue); }
+      .option-head { display:flex; justify-content:space-between; align-items:end; margin:20px 0 11px; }.option-head h2 { margin:0; font-size:17px; letter-spacing:-.04em; }.presets { display:flex; flex-wrap:wrap; gap:8px; }.preset { display:flex; align-items:center; gap:7px; padding:8px 10px; border:1px solid var(--line); background:rgba(255,255,255,.76); cursor:pointer; font-size:12px; }.preset:has(input:checked) { color:#087bb8; border-color:var(--blue); background:#effbff; }.preset input { accent-color:var(--blue); }.options { display:grid; grid-template-columns:1.1fr 1.1fr .9fr 1.15fr; gap:14px; }.card { min-height:266px; padding:15px; border:1px solid #e1eaf2; background:rgba(255,255,255,.82); box-shadow:0 12px 28px rgba(37,80,115,.05); }.card h3 { margin:0 0 13px; color:var(--blue); font-size:14px; letter-spacing:-.03em; }.switch { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:10px 0; color:#4f5e75; font-size:12px; }.switch input { appearance:none; position:relative; width:34px; height:19px; border-radius:99px; background:#d5e0ea; cursor:pointer; transition:.18s; }.switch input::after { content:""; position:absolute; width:13px; height:13px; top:3px; left:3px; border-radius:50%; background:white; box-shadow:0 1px 4px rgba(0,0,0,.18); transition:.18s; }.switch input:checked { background:var(--cyan); }.switch input:checked::after { transform:translateX(15px); }.input-row { margin:13px 0; }.input-row label { display:flex; justify-content:space-between; margin-bottom:6px; color:#5b6880; font-size:11px; }.input-row input,.input-row select { width:100%; border:1px solid var(--line); background:#fff; padding:8px 9px; color:#31435d; outline:0; font-size:12px; }.input-row input:focus,.input-row select:focus { border-color:var(--blue); }.small-note { color:#7c879a; font-size:10px; line-height:1.5; }.notice { margin-top:16px; padding:11px 13px; border-left:3px solid var(--orange); color:#68728a; background:#fff7f2; font-size:12px; line-height:1.6; }.success { color:#128579; }.danger { color:#cf5c48; }
+      @media(max-width:980px){.options{grid-template-columns:repeat(2,1fr)}.card{min-height:auto}}@media(max-width:620px){.shell{width:min(100% - 24px,1280px);padding-top:15px}.nav a:last-child{display:none}.hero-grid{grid-template-columns:1fr}.hero h1{font-size:48px}.privacy{width:max-content;max-width:100%}.tabs{overflow:auto}.tab{white-space:nowrap}.workbar{align-items:flex-start;flex-direction:column}.options{grid-template-columns:1fr}.output-actions{width:100%}.output-actions button{flex:1}.editor{min-height:360px}}
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="nav">
+        <a class="brand" href="/" aria-label="返回 THIRTY / EIGHTY 页面画廊"><span class="brand-mark">J/</span><span class="brand-copy"><strong>CODE VAULT</strong><span>local tool / 81 of 81</span></span></a>
+        <a href="/">返回页面画廊 ↗</a>
+      </header>
+      <section class="hero">
+        <div class="hero-grid"><div><span class="eyebrow">javascript / local transform</span><h1>JavaScript<br>混淆工坊</h1></div><p>输入一段 JavaScript，选择处理策略，然后在浏览器本地生成一份更难阅读的输出代码。</p></div>
+        <div class="privacy">LOCAL ONLY · 不上传源代码 · 建议仅用于你拥有或获授权维护的脚本</div>
+      </section>
+      <nav class="tabs" aria-label="处理步骤"><button class="tab active" data-tab="source">粘贴代码</button><button class="tab" data-tab="file">选择文件</button><button class="tab" data-tab="result">混淆结果</button></nav>
+      <section class="panel active" id="source-panel"><textarea class="editor" id="source" spellcheck="false" aria-label="输入 JavaScript 代码">// 一个用于演示的本地函数
+function hello(name) {
+  const greeting = "Hello, " + name;
+  console.log(greeting);
+  return greeting;
+}
+
+hello("World");</textarea></section>
+      <section class="panel" id="file-panel"><div class="file-drop"><div><strong>从本地选择 JavaScript 文件</strong><p id="fileName">支持 .js、.mjs、.cjs；文件仅在此浏览器标签页中读取。</p><label for="fileInput">选择文件</label><input id="fileInput" type="file" accept=".js,.mjs,.cjs,text/javascript,application/javascript"></div></div></section>
+      <section class="panel" id="result-panel"><textarea class="editor" id="result" spellcheck="false" aria-label="混淆输出" placeholder="执行混淆后，结果会显示在这里。"></textarea><div class="workbar"><span id="resultStatus" class="status">暂无输出</span><div class="output-actions"><button id="copyResult" class="quiet">复制结果</button><button id="downloadResult" class="quiet">下载 .js</button></div></div></section>
+      <div class="workbar"><button id="obfuscate" class="action">生成混淆代码</button><span id="sourceStatus" class="status">SOURCE · 0 B · 浏览器本地处理</span></div>
+      <section>
+        <div class="option-head"><h2>混淆选项预设</h2><div class="presets"><label class="preset"><input type="radio" name="preset" value="light">轻度</label><label class="preset"><input type="radio" name="preset" value="balanced" checked>平衡</label><label class="preset"><input type="radio" name="preset" value="strong">强化</label></div></div>
+        <div class="options">
+          <article class="card"><h3>基础设置</h3><label class="switch">紧凑代码 <input id="compact" type="checkbox" checked></label><label class="switch">删除注释 <input id="removeComments" type="checkbox" checked></label><label class="switch">移除 console 输出 <input id="dropConsole" type="checkbox"></label><label class="switch">数值转十六进制 <input id="numbers" type="checkbox"></label><label class="switch">字符串池 <input id="strings" type="checkbox" checked></label><p class="small-note">基础设置优先确保阅读难度与可维护性之间的平衡。</p></article>
+          <article class="card"><h3>标识符处理</h3><label class="switch">重命名局部标识符 <input id="rename" type="checkbox"></label><label class="switch">包装运行函数 <input id="wrap" type="checkbox" checked></label><label class="switch">加入结构干扰 <input id="structure" type="checkbox"></label><div class="input-row"><label for="naming">命名风格 <span>局部变量</span></label><select id="naming"><option value="hex">hexadecimal</option><option value="short">short</option></select></div><p class="small-note">重命名会影响动态反射或全局调用的代码；请在发布前自行测试。</p></article>
+          <article class="card"><h3>强度</h3><div class="input-row"><label for="strength">编码比例 <span id="strengthValue">0.65</span></label><input id="strength" type="range" min="0.2" max="1" step="0.05" value="0.65"></div><div class="input-row"><label for="flow">控制流干扰 <span id="flowValue">0.30</span></label><input id="flow" type="range" min="0" max="1" step="0.05" value="0.30"></div><div class="input-row"><label for="quote">字符串引号</label><select id="quote"><option value="single">单引号</option><option value="double">双引号</option></select></div><p class="small-note">参数会改变生成包装层的结构和输出体积。</p></article>
+          <article class="card"><h3>高级设置</h3><div class="input-row"><label for="domain">允许域名 <span>可选</span></label><input id="domain" placeholder="example.com"></div><div class="input-row"><label for="redirect">不匹配时跳转</label><input id="redirect" placeholder="about:blank"></div><div class="input-row"><label for="reserve">保留名称</label><input id="reserve" placeholder="变量名, 函数名"></div><p class="small-note">本演示页不会自动嵌入域名锁定；高级字段仅用于记录设置。</p></article>
+        </div>
+        <p class="notice"><strong>说明：</strong> 该页面是本地演示工具，提供轻量级代码包装、字符串池、标识符变换和格式压缩。混淆并不能代替安全措施，也不能阻止有经验的分析者阅读代码。</p>
+      </section>
+    </main>
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+      const tabs = document.querySelectorAll('.tab');
+      const byteSize = (value) => new TextEncoder().encode(value).length;
+      const source = $('#source'); const result = $('#result');
+      const sourceStatus = $('#sourceStatus'); const resultStatus = $('#resultStatus');
+      const cleanTabs = (target) => { tabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === target)); document.querySelectorAll('.panel').forEach((panel) => panel.classList.toggle('active', panel.id === target + '-panel')); };
+      tabs.forEach((tab) => tab.addEventListener('click', () => cleanTabs(tab.dataset.tab)));
+      function updateSourceStatus() { sourceStatus.textContent = `SOURCE · ${byteSize(source.value)} B · 浏览器本地处理`; }
+      source.addEventListener('input', updateSourceStatus); updateSourceStatus();
+      $('#fileInput').addEventListener('change', async (event) => { const file = event.target.files[0]; if (!file) return; source.value = await file.text(); $('#fileName').textContent = `已读取：${file.name} · ${byteSize(source.value)} B`; updateSourceStatus(); cleanTabs('source'); });
+      function removeComments(code) { return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, ''); }
+      function encodeStrings(code, quote) { const pool = []; const output = code.replace(/(['"])((?:\\.|(?!\1)[^\\])*)\1/g, (whole, mark, content) => { pool.push(content); return `__v[${pool.length - 1}]`; }); if (!pool.length) return output; const stringPool = JSON.stringify(pool); return `const __v=${stringPool};\n${output}`; }
+      function convertNumbers(code) { return code.replace(/\b(\d{2,})\b/g, (number) => `0x${Number(number).toString(16)}`); }
+      function renameLocal(code, style, reserved) { const blocked = new Set(['console','window','document','JSON','Math','Date','Array','Object','String','Number','Boolean','setTimeout','setInterval','return','function','const','let','var',...reserved]); const candidates = [...code.matchAll(/\b(?:const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/g)].map((match) => match[1]).filter((name) => !blocked.has(name)); const map = new Map(); candidates.forEach((name, index) => map.set(name, style === 'hex' ? `_0x${(index + 31).toString(16)}` : `_${index.toString(36)}`)); map.forEach((next, original) => { code = code.replace(new RegExp(`\\b${original}\\b`, 'g'), next); }); return code; }
+      function localObfuscate(input) {
+        let code = input.trim(); if (!code) throw new Error('请先输入 JavaScript 代码。');
+        if ($('#removeComments').checked) code = removeComments(code);
+        if ($('#dropConsole').checked) code = code.replace(/console\.(?:log|info|warn|debug)\([^;]*\);?/g, '');
+        if ($('#numbers').checked) code = convertNumbers(code);
+        if ($('#rename').checked) code = renameLocal(code, $('#naming').value, $('#reserve').value.split(',').map((item) => item.trim()).filter(Boolean));
+        if ($('#strings').checked) code = encodeStrings(code, $('#quote').value);
+        if ($('#compact').checked) code = code.split('\n').map((line) => line.trim()).filter(Boolean).join('');
+        if (!$('#wrap').checked) return code;
+        const payload = btoa(unescape(encodeURIComponent(code)));
+        const strength = Number($('#strength').value); const noise = $('#structure').checked ? `;const _0xn=${Math.floor(Math.random() * 800 + 100)}^${Math.floor(strength * 1000)}` : '';
+        return `(()=>{const _0xs='${payload}';const _0xd=decodeURIComponent(escape(atob(_0xs)));${noise};Function(_0xd)()})();`;
+      }
+      function showResult(message, type = '') { resultStatus.className = 'status ' + type; resultStatus.textContent = message; }
+      $('#obfuscate').addEventListener('click', () => { try { const output = localObfuscate(source.value); result.value = output; showResult(`OUTPUT · ${byteSize(output)} B · 已在本地生成`, 'success'); cleanTabs('result'); } catch (error) { showResult(error.message, 'danger'); } });
+      $('#copyResult').addEventListener('click', async () => { if (!result.value) return showResult('暂无可复制的结果。', 'danger'); await navigator.clipboard.writeText(result.value); showResult('已复制到剪贴板。', 'success'); });
+      $('#downloadResult').addEventListener('click', () => { if (!result.value) return showResult('请先生成结果。', 'danger'); const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([result.value], { type:'text/javascript' })); link.download = 'obfuscated-script.js'; link.click(); URL.revokeObjectURL(link.href); });
+      const presetStates = { light:{ compact:true, removeComments:true, strings:false, rename:false, numbers:false, structure:false, strength:.35, flow:.1 }, balanced:{ compact:true, removeComments:true, strings:true, rename:false, numbers:false, structure:false, strength:.65, flow:.3 }, strong:{ compact:true, removeComments:true, strings:true, rename:true, numbers:true, structure:true, strength:.9, flow:.75 } };
+      document.querySelectorAll('input[name="preset"]').forEach((radio) => radio.addEventListener('change', () => { const state = presetStates[radio.value]; Object.entries(state).forEach(([key, value]) => { const element = $('#' + key); if (!element) return; if (element.type === 'checkbox') element.checked = value; else element.value = value; }); $('#strengthValue').textContent = Number($('#strength').value).toFixed(2); $('#flowValue').textContent = Number($('#flow').value).toFixed(2); }));
+      ['strength','flow'].forEach((id) => $('#' + id).addEventListener('input', (event) => { $('#' + id + 'Value').textContent = Number(event.target.value).toFixed(2); }));
+    </script>
+  </body>
+</html>
