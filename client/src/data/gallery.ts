@@ -2,6 +2,8 @@
  * Design reminder — Interface Specimen Room:
  * Quiet ink-black curatorial frame; every page acts as a distinct, highly legible design specimen.
  */
+import { interactivePages } from "./interactivePages";
+
 export type GalleryPage = {
   id: string;
   slug: string;
@@ -17,7 +19,7 @@ export type GalleryPage = {
 export const heroImage = "/manus-storage/thirty-hero-exhibition_96aa4bca.jpg";
 export const markImage = "/manus-storage/thirty-mark_fce34e46.png";
 
-export const galleryPages: GalleryPage[] = [
+export const originalGalleryPages: GalleryPage[] = [
   { id: "01", slug: "aster", name: "Aster", category: "科技", kind: "product", description: "AI 产品发布页，以轨道光迹和模块化性能指标组织叙事。", tags: ["AI", "3D", "暗色"], colors: ["#071427", "#2875FF", "#FF5D22"], image: "/manus-storage/aster-orbital-sculpture_fd633819.jpg" },
   { id: "02", slug: "folklore", name: "Folklore", category: "创意", kind: "studio", description: "创意工作室主页，使用编辑式层级和非对称作品目录。", tags: ["Studio", "Editorial", "Grid"], colors: ["#F1ECE3", "#17211F", "#CF4E2A"] },
   { id: "03", slug: "form-and-field", name: "Form & Field", category: "生活方式", kind: "commerce", description: "陶艺品牌商店，以柔性圆角、留白和材质细节呈现产品。", tags: ["Craft", "Soft UI", "Shop"], colors: ["#E5DED0", "#6C5A4D", "#A2B58A"] },
@@ -50,4 +52,5 @@ export const galleryPages: GalleryPage[] = [
   { id: "30", slug: "atlas", name: "Atlas", category: "旅行", kind: "travel", description: "探索工具页，用地图化导航、任务卡和沉浸式地点叙事收束目录。", tags: ["Explore", "Map", "Adventure"], colors: ["#0E2941", "#D7E4DD", "#F56A43"] },
 ];
 
+export const galleryPages: GalleryPage[] = [...originalGalleryPages, ...interactivePages];
 export const galleryCategories = ["全部", ...Array.from(new Set(galleryPages.map((page) => page.category)))];

@@ -1,16 +1,16 @@
-# THIRTY — Interface Specimen Room
+# THIRTY / EIGHTY — Interface Specimen Room
 
-> **30 个可直接打开、可继续改造的当代 HTML 页面。**
+> **80 个可直接打开、可继续改造的当代 HTML 页面。**
 
-THIRTY 将网页设计趋势整理成一座可浏览的“界面标本室”。项目提供一个 React 画廊入口，以及 **30 个完全独立的 HTML 页面**；每个示例均包含自身的 HTML、CSS 与少量原生 JavaScript，不依赖构建步骤即可单独在浏览器中查看。
+THIRTY 将网页设计趋势整理成一座可浏览的“界面标本室”。项目提供一个 React 画廊入口，以及 **80 个完全独立的 HTML 页面**；每个示例均包含自身的 HTML、CSS 与少量原生 JavaScript，不依赖构建步骤即可单独在浏览器中查看。
 
 ## 内容与结构
 
 | 内容 | 位置 | 用途 |
 | --- | --- | --- |
-| 画廊首页与预览器 | `client/src/` | 分类、搜索、查看三十个完整页面。 |
+| 画廊首页与预览器 | `client/src/` | 分类、搜索、查看八十个完整页面。 |
 | 独立 HTML 页面 | `client/public/pages/` | 可直接访问或复制到其他项目的最终页面文件。 |
-| 页面生成器 | `scripts/build-pages.mjs` | 将三十条页面定义写入各自的 `index.html`。 |
+| 页面生成器 | `scripts/build-pages.mjs`、`scripts/build-interactive-pages.mjs` | 分别生成经典策展页与五十个炫彩互动页。 |
 | 设计构想 | `ideas.md` | 记录选定的“界面标本室”风格与策展目录。 |
 
 每个原始页面可从以下路径直接访问：
@@ -20,7 +20,21 @@ THIRTY 将网页设计趋势整理成一座可浏览的“界面标本室”。�
 /pages/02-folklore/index.html
 ...
 /pages/30-atlas/index.html
+/pages/31-prism-cursor/index.html
+...
+/pages/80-daylight-planner/index.html
 ```
+
+## 炫彩互动扩展
+
+新增的五十个页面不只是视觉稿；它们均使用原生 Canvas 或浏览器端表单逻辑，在不依赖外部运行时的前提下提供可操作的效果。鼠标轨迹、粒子、轨道、小球碰撞等实验参考了创意编程中常见的响应式画布交互；工具页则将动效约束在服务操作的范围内。[3] [4]
+
+| 编号 | 新增类别 | 数量 | 代表页面 | 可操作内容 |
+| --- | --- | ---: | --- | --- |
+| 31–40 | 鼠标色彩 | 10 | Prism Cursor、Liquid Cursor、Kaleidoscope | 彩虹尾迹、彩纸、万花筒、涟漪、磁场。 |
+| 41–50 | 宇宙行星 | 10 | Solar Atlas、Orbit Lab、Comet Trail | 太阳系轨道、行星选择、星场、彗星与任务面板。 |
+| 51–65 | 物理动画 | 15 | Gravity Balls、Spring Mesh、Wave Field | 碰撞、引力、摆锤、流场、粒子和波浪。 |
+| 66–80 | 实用工具 | 15 | Focus Pomodoro、Color Mixer、Task Matrix | 计时、颜色、换算、密码提示、时间轮与日程安排。 |
 
 ## 页面目录
 
@@ -70,6 +84,7 @@ pnpm dev
 
 ```bash
 node scripts/build-pages.mjs
+node scripts/build-interactive-pages.mjs
 ```
 
 生产验证命令如下：
@@ -87,3 +102,5 @@ pnpm build
 
 [1]: https://www.figma.com/resource-library/web-design-trends/ "Figma：Top web design trends for 2026"
 [2]: https://www.zoho.com/landingpage/landing-page-design-trends.html "Zoho LandingPage：10 proven landing page design trends for 2026"
+[3]: https://experiments.withgoogle.com/search?q=particles "Experiments with Google：Interactive particle experiments"
+[4]: https://www.awwwards.com/awwwards/collections/css-js-animations/ "Awwwards：CSS & JS Animations"
