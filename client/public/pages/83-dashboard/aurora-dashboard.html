@@ -1,1 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星屿 Aurora · 炫彩效率面板</title>
+<style>
+  :root{
+    --bg:#070a16;
+    --ink:#eef1ff;
+    --muted:rgba(233,236,255,.58);
+    --line:rgba(255,255,255,.10);
+    --card:rgba(255,255,255,.055);
+    --violet:#8b7bff;
+    --cyan:#3ee6ff;
+    --pink:#ff6ec7;
+    --amber:#ffc95c;
+    --mint:#57e6a4;
+    --radius:22px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{color-scheme:dark}
+  ul{list-style:none}
+  input,textarea,button{font:inherit;color:inherit}
+  button{cursor:pointer;background:none;border:none}
+
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 800px at 72% -10%, #141a3c 0%, transparent 60%),
+      linear-gradient(180deg,#070a16 0%,#090d22 100%);
+    background-attachment:fixed;
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(ellipse at 50% -10%, rgba(255,255,255,.06), transparent 55%);
+  }
+
+  /* ---------- 极光背景 ---------- */
+  .blob{position:fixed;border-radius:50%;filter:blur(90px);z-index:0;pointer-events:none;will-change:transform}
+  .b1{width:52vw;height:52vw;left:-12vw;top:-18vw;opacity:.55;
+      background:radial-gradient(circle at 30% 30%, #6d5dff, transparent 65%);
+      animation:drift1 26s ease-in-out infinite alternate}
+  .b2{width:46vw;height:46vw;right:-10vw;top:6vh;opacity:.42;
+      background:radial-gradient(circle at 60% 40%, #ff5fc0, transparent 62%);
+      animation:drift2 32s ease-in-out infinite alternate}
+  .b3{width:44vw;height:44vw;left:26vw;bottom:-20vh;opacity:.38;
+      background:radial-gradient(circle at 50% 50%, #17c8ff, transparent 62%);
+      animation:drift3 38s ease-in-out infinite alternate}
+  @keyframes drift1{to{transform:translate(9vw,7vh) scale(1.15)}}
+  @keyframes drift2{to{transform:translate(-7vw,9vh) scale(1.08)}}
+  @keyframes drift3{to{transform:translate(6vw,-6vh) scale(1.12)}}
+
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+  #glow{position:fixed;width:520px;height:520px;border-radius:50%;z-index:1;pointer-events:none;
+        transform:translate(-9999px,-9999px);
+        background:radial-gradient(circle, rgba(124,108,255,.14), rgba(56,214,255,.07) 45%, transparent 70%)}
+
+  main{max-width:1160px;margin:0 auto;padding:0 22px;position:relative;z-index:2}
+
+  /* ---------- 顶部问候 + 时钟 ---------- */
+  .hero{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin:42px 0 28px}
+  .eyebrow{font-size:13px;letter-spacing:4px;color:var(--cyan);text-transform:uppercase;margin-bottom:12px;opacity:.92}
+  h1{font-size:clamp(26px,3.4vw,40px);font-weight:800;letter-spacing:1px;line-height:1.25}
+  #greeting{
+    background:linear-gradient(92deg,#ffffff 10%,#cfd6ff 45%,#9db8ff 70%,#7ce7ff 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .ge{color:#ffd9a0;margin-right:8px}
+  .sub{margin-top:10px;color:var(--muted);font-size:14.5px}
+  .clock{
+    font-size:clamp(44px,6vw,72px);font-weight:800;letter-spacing:3px;line-height:1;text-align:right;
+    font-variant-numeric:tabular-nums;
+    background:linear-gradient(120deg,#ffffff,#ffd9f2 35%,#b9c8ff 70%,#8ef3ff);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .date{margin-top:10px;color:var(--muted);font-size:13.5px;letter-spacing:1px;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* ---------- 卡片网格 ---------- */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .card{
+    position:relative;padding:24px;border-radius:var(--radius);
+    background:var(--card);border:1px solid var(--line);
+    backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+    box-shadow:0 14px 40px -20px rgba(0,0,0,.55);
+    transition:transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s, border-color .35s;
+    opacity:0;animation:rise .8s cubic-bezier(.2,.7,.3,1) both;
+  }
+  .card:nth-child(1){animation-delay:.10s}
+  .card:nth-child(2){animation-delay:.18s}
+  .card:nth-child(3){animation-delay:.26s}
+  .card:nth-child(4){animation-delay:.34s}
+  @keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+  .reveal{opacity:0;animation:rise .8s cubic-bezier(.2,.7,.3,1) both}
+  .hero-left.reveal{animation-delay:.02s}
+  .hero-right.reveal{animation-delay:.08s}
+
+  .todo-card{--acS:rgba(139,123,255,.35);--acB:rgba(139,123,255,.5)}
+  .pomo-card{--acS:rgba(255,110,199,.32);--acB:rgba(255,110,199,.5)}
+  .note-card{--acS:rgba(61,216,255,.30);--acB:rgba(61,216,255,.5)}
+  .pal-card {--acS:rgba(255,201,92,.30);--acB:rgba(255,201,92,.5)}
+  .card:hover{transform:translateY(-5px);border-color:var(--acB);box-shadow:0 24px 70px -24px var(--acS)}
+
+  .card-head{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+  .chip{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:21px;flex-shrink:0;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+  .chip-violet{background:linear-gradient(135deg,#8b7bff,#5f67ff)}
+  .chip-pink{background:linear-gradient(135deg,#ff6ec7,#c86bff)}
+  .chip-cyan{background:linear-gradient(135deg,#2dd8ff,#3b82f6)}
+  .chip-amber{background:linear-gradient(135deg,#ffc95c,#ff8f5c)}
+  .card-head h2{font-size:16.5px;letter-spacing:.5px}
+  .card-sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+
+  /* ---------- 待办清单 ---------- */
+  .todo-list{max-height:262px;overflow-y:auto;padding-right:4px}
+  .todo-list li{display:flex;align-items:center;gap:12px;padding:11px 6px;border-bottom:1px dashed rgba(255,255,255,.09);animation:itemIn .35s both}
+  @keyframes itemIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+  .todo-list .empty{justify-content:center;color:var(--muted);padding:28px 0;border:none;font-size:14px;animation:none}
+  .t-check{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.28);flex-shrink:0;position:relative;transition:.2s}
+  .t-check:hover{border-color:var(--mint);transform:scale(1.08)}
+  li.done .t-check{background:linear-gradient(135deg,#57e6a4,#3ec9f0);border-color:transparent}
+  li.done .t-check::after{content:'✓';position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:800;color:#052a1e}
+  .t-text{flex:1;font-size:15px;line-height:1.5;word-break:break-all}
+  li.done .t-text{text-decoration:line-through;color:var(--muted)}
+  .t-del{opacity:0;color:var(--muted);font-size:15px;padding:2px 6px;transition:.2s;border-radius:8px}
+  li:hover .t-del{opacity:1}
+  .t-del:hover{color:#ff8484;background:rgba(255,120,120,.1)}
+  .todo-form{display:flex;gap:10px;margin-top:16px}
+  .todo-form input{
+    flex:1;min-width:0;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;
+    padding:11px 14px;outline:none;transition:border-color .25s, box-shadow .25s;
+  }
+  .todo-form input::placeholder{color:rgba(233,236,255,.35)}
+  .todo-form input:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--acS)}
+
+  /* ---------- 按钮 ---------- */
+  .btn{border-radius:999px;padding:10px 18px;font-weight:600;font-size:14px;transition:transform .2s, filter .2s;white-space:nowrap}
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.12)}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:linear-gradient(135deg,#8b7bff,#4f7dff);color:#fff;box-shadow:0 8px 20px -8px rgba(110,120,255,.6)}
+  .pomo-card .btn-primary{background:linear-gradient(135deg,#ff6ec7,#b06cff);box-shadow:0 8px 20px -8px rgba(255,110,199,.55)}
+  .btn-ghost{background:rgba(255,255,255,.07);color:var(--ink);border:1px solid var(--line)}
+
+  /* ---------- 番茄钟 ---------- */
+  .pomo-stage{position:relative;width:232px;height:232px;margin:6px auto 12px}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,.08);stroke-width:12}
+  .ring-fg{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .25s linear;
+           transform:rotate(-90deg);transform-origin:50% 50%}
+  .pomo-center{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
+  .pomo-time{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;
+             background:linear-gradient(120deg,#ffffff,#ffd9f2 60%,#b9c8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .pomo-mode{margin-top:6px;font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+  .pomo-controls{display:flex;flex-direction:column;align-items:center;gap:13px}
+  .mode-chips{display:flex;gap:8px}
+  .chip-btn{padding:7px 17px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:13px;transition:.25s}
+  .chip-btn.active{background:linear-gradient(135deg,rgba(255,110,199,.22),rgba(139,123,255,.22));color:#fff;border-color:rgba(255,140,210,.45)}
+  .pomo-btns{display:flex;gap:10px}
+  .pomo-count{font-size:12.5px;color:var(--muted)}
+
+  /* ---------- 随手记 ---------- */
+  #noteArea{
+    width:100%;min-height:172px;resize:vertical;line-height:1.75;
+    background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;outline:none;font-size:14.5px;
+    transition:border-color .25s, box-shadow .25s;
+  }
+  #noteArea::placeholder{color:rgba(233,236,255,.35)}
+  #noteArea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px var(--acS)}
+  .note-foot{display:flex;justify-content:space-between;margin-top:10px;font-size:12.5px;color:var(--muted)}
+  #noteStatus{opacity:0;transition:opacity .4s;color:var(--mint)}
+
+  /* ---------- 今日配色 ---------- */
+  .swatches{display:flex;gap:10px;margin-top:4px}
+  .swatch{
+    flex:1;height:112px;border-radius:14px;display:flex;align-items:flex-end;justify-content:center;
+    padding-bottom:9px;color:rgba(255,255,255,.95);font-size:12px;font-weight:700;letter-spacing:.5px;
+    text-shadow:0 1px 5px rgba(0,0,0,.45);
+    transition:flex-grow .3s cubic-bezier(.2,.7,.3,1), transform .3s;
+  }
+  .swatch:hover{flex-grow:1.7;transform:translateY(-3px)}
+  .pal-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:15px;flex-wrap:wrap}
+  .pal-tip{font-size:13px;color:var(--muted)}
+
+  /* ---------- 页脚 / 提示 ---------- */
+  .site-foot{margin:36px 0 28px;text-align:center;color:var(--muted);font-size:12.5px;line-height:2}
+  #toast{
+    position:fixed;left:50%;bottom:34px;z-index:99;transform:translate(-50%,16px);
+    background:rgba(18,22,40,.88);border:1px solid rgba(255,255,255,.15);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    padding:11px 21px;border-radius:999px;font-size:14px;color:#fff;
+    opacity:0;pointer-events:none;transition:.35s;box-shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+
+  ::selection{background:rgba(139,123,255,.45)}
+  :focus-visible{outline:2px solid #7ce7ff;outline-offset:2px}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:99px}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  @media (max-width:900px){
+    .grid{grid-template-columns:1fr}
+    .hero{flex-direction:column;align-items:flex-start;margin-top:30px}
+    .clock,.date{text-align:left}
+    .blob{filter:blur(60px)}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  }
+</style>
+</head>
+<body>
+  <div class="blob b1" aria-hidden="true"></div>
+  <div class="blob b2" aria-hidden="true"></div>
+  <div class="blob b3" aria-hidden="true"></div>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div id="glow" aria-hidden="true"></div>
+
+  <main>
+    <header class="hero">
+      <div class="hero-left reveal">
+        <p class="eyebrow">✦ 星屿 · Aurora Panel</p>
+        <h1><span class="ge" id="greetEmoji">👋</span><span id="greeting">你好</span></h1>
+        <p class="sub" id="quoteLine"></p>
+      </div>
+      <div class="hero-right reveal">
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="date" id="dateLine">加载中…</div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <!-- 待办清单 -->
+      <article class="card todo-card">
+        <header class="card-head">
+          <span class="chip chip-violet" aria-hidden="true">📌</span>
+          <div><h2>待办清单</h2><p class="card-sub" id="todoMeta">加载中…</p></div>
+        </header>
+        <ul id="todoList" class="todo-list"></ul>
+        <form id="todoForm" class="todo-form">
+          <input id="todoInput" type="text" maxlength="80" placeholder="添加新任务，回车确认…" autocomplete="off" aria-label="新任务名称">
+          <button type="submit" class="btn btn-primary">＋ 添加</button>
+        </form>
+      </article>
+
+      <!-- 番茄钟 -->
+      <article class="card pomo-card">
+        <header class="card-head">
+          <span class="chip chip-pink" aria-hidden="true">⏱️</span>
+          <div><h2>番茄专注</h2><p class="card-sub">25 分钟专注 · 5 分钟休息</p></div>
+        </header>
+        <div class="pomo-stage">
+          <svg viewBox="0 0 220 220" width="232" height="232" aria-hidden="true">
+            <defs>
+              <linearGradient id="gradFocus" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ff6ec7"/><stop offset="100%" stop-color="#8b7bff"/>
+              </linearGradient>
+              <linearGradient id="gradBreak" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#57e6a4"/><stop offset="100%" stop-color="#3ee6ff"/>
+              </linearGradient>
+            </defs>
+            <circle cx="110" cy="110" r="96" class="ring-bg"/>
+            <circle cx="110" cy="110" r="96" class="ring-fg" id="ringFg"/>
+          </svg>
+          <div class="pomo-center">
+            <div class="pomo-time" id="pomoTime">25:00</div>
+            <div class="pomo-mode" id="pomoMode">FOCUS · 专注</div>
+          </div>
+        </div>
+        <div class="pomo-controls">
+          <div class="mode-chips">
+            <button class="chip-btn active" data-mode="focus">专注</button>
+            <button class="chip-btn" data-mode="break">休息</button>
+          </div>
+          <div class="pomo-btns">
+            <button id="pomoToggle" class="btn btn-primary">▶ 开始</button>
+            <button id="pomoReset" class="btn btn-ghost">↺ 重置</button>
+          </div>
+          <p class="pomo-count" id="pomoCount">今日已完成 🍅 × 0</p>
+        </div>
+      </article>
+
+      <!-- 今日配色 -->
+      <article class="card pal-card">
+        <header class="card-head">
+          <span class="chip chip-amber" aria-hidden="true">🎨</span>
+          <div><h2>今日配色</h2><p class="card-sub">每次打开都是一组新灵感</p></div>
+        </header>
+        <div class="swatches" id="swatches"></div>
+        <div class="pal-foot">
+          <p class="pal-tip" id="palName"></p>
+          <button id="palRegen" class="btn btn-ghost">🎲 换一组</button>
+        </div>
+      </article>
+
+      <!-- 随手记 -->
+      <article class="card note-card">
+        <header class="card-head">
+          <span class="chip chip-cyan" aria-hidden="true">💡</span>
+          <div><h2>随手记</h2><p class="card-sub">内容自动保存在本机浏览器</p></div>
+        </header>
+        <textarea id="noteArea" placeholder="灵感一闪而过？先记下来…" spellcheck="false" aria-label="随手记内容"></textarea>
+        <footer class="note-foot"><span id="noteStatus">已自动保存 ✓</span><span id="noteCount">0 字</span></footer>
+      </article>
+    </section>
+
+    <footer class="site-foot">
+      <p>✦ 所有数据仅保存在你的浏览器本地，刷新与关闭都不会丢失 ✦</p>
+    </footer>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* ---------- 小工具 ---------- */
+const $  = (s, c) => (c || document).querySelector(s);
+const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+const esc = s => s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const pad = n => String(n).padStart(2, '0');
+const DOC_TITLE = document.title;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* 本地存储：环境不支持时静默降级为内存模式 */
+const store = {
+  get(k, fb) { try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); } catch (e) { return fb; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+let toastTimer = null;
+function toast(msg) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ---------- 时钟 · 问候 · 每日一句 ---------- */
+const QUOTES = [
+  '把今天过成自己喜欢的样子。',
+  '专注不是天赋，而是可以练习的能力。',
+  '慢慢来，反而快。',
+  '先完成，再完美。',
+  '微小的进步 × 365 天 = 巨大的改变。',
+  '休息也是生产力的一部分。',
+  '种一棵树最好的时间是十年前，其次是现在。',
+  '你只管努力，剩下的交给时间。'
+];
+
+function tick() {
+  const n = new Date(), h = n.getHours();
+  $('#clock').textContent = pad(h) + ':' + pad(n.getMinutes()) + ':' + pad(n.getSeconds());
+  const week = ['日','一','二','三','四','五','六'][n.getDay()];
+  $('#dateLine').textContent = n.getFullYear() + ' 年 ' + (n.getMonth() + 1) + ' 月 ' + n.getDate() + ' 日 · 星期' + week;
+  const g = h < 5 ? ['夜深了', '🌙']
+          : h < 9 ? ['早上好', '🌅']
+          : h < 12 ? ['上午好', '🌤️']
+          : h < 14 ? ['中午好', '🍜']
+          : h < 18 ? ['下午好', '☕']
+          : ['晚上好', '🌃'];
+  $('#greetEmoji').textContent = g[1];
+  $('#greeting').textContent = g[0];
+}
+tick();
+setInterval(tick, 1000);
+
+(function dailyQuote() {
+  const start = new Date(new Date().getFullYear(), 0, 0);
+  const day = Math.floor((Date.now() - start.getTime()) / 864e5);
+  $('#quoteLine').textContent = QUOTES[day % QUOTES.length];
+})();
+
+/* ---------- 待办清单 ---------- */
+const todoKey = 'aurora.todos.v1';
+let todos = store.get(todoKey, null);
+if (!Array.isArray(todos)) {
+  todos = [
+    { id: 1, text: '点击左侧圆圈，勾选完成的任务', done: true },
+    { id: 2, text: '在下方输入框添加一条新任务 ✨', done: false }
+  ];
+  store.set(todoKey, todos);
+}
+function renderTodos() {
+  const list = $('#todoList');
+  if (!todos.length) {
+    list.innerHTML = '<li class="empty">🌈 任务都清空啦，享受此刻的轻松～</li>';
+  } else {
+    list.innerHTML = todos.map(t =>
+      '<li class="' + (t.done ? 'done' : '') + '" data-id="' + t.id + '">' +
+        '<button class="t-check" aria-label="' + (t.done ? '标记为未完成' : '标记为已完成') + '"></button>' +
+        '<span class="t-text">' + esc(t.text) + '</span>' +
+        '<button class="t-del" aria-label="删除任务">✕</button>' +
+      '</li>').join('');
+  }
+  const undone = todos.filter(t => !t.done).length;
+  $('#todoMeta').textContent = todos.length
+    ? '未完成 ' + undone + ' 项 · 共 ' + todos.length + ' 项'
+    : '今天没有安排，很轻松';
+}
+$('#todoList').addEventListener('click', e => {
+  const li = e.target.closest('li[data-id]');
+  if (!li) return;
+  const id = Number(li.dataset.id);
+  if (e.target.classList.contains('t-check')) {
+    const t = todos.find(x => x.id === id);
+    if (t) { t.done = !t.done; store.set(todoKey, todos); renderTodos(); }
+  } else if (e.target.classList.contains('t-del')) {
+    todos = todos.filter(x => x.id !== id);
+    store.set(todoKey, todos);
+    renderTodos();
+    toast('已删除任务');
+  }
+});
+$('#todoForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = $('#todoInput'), text = input.value.trim();
+  if (!text) { input.focus(); return; }
+  todos.unshift({ id: Date.now(), text: text, done: false });
+  input.value = '';
+  store.set(todoKey, todos);
+  renderTodos();
+  input.focus();
+});
+renderTodos();
+
+/* ---------- 番茄专注钟 ---------- */
+const POMO = { focus: 25 * 60, break: 5 * 60 };
+const pomoKey = 'aurora.pomo.v1';
+const todayStr = () => {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+};
+let pomoRecord = store.get(pomoKey, null);
+if (!pomoRecord || pomoRecord.date !== todayStr()) pomoRecord = { date: todayStr(), count: 0 };
+
+const pomoState = { mode: 'focus', remain: POMO.focus, running: false, timer: null, last: 0 };
+const RING_C = 2 * Math.PI * 96;
+$('#ringFg').style.strokeDasharray = RING_C;
+
+function fmt(sec) {
+  sec = Math.max(0, Math.round(sec));
+  return pad(Math.floor(sec / 60)) + ':' + pad(sec % 60);
+}
+function renderPomo() {
+  $('#pomoTime').textContent = fmt(pomoState.remain);
+  $('#ringFg').style.strokeDashoffset = RING_C * (1 - pomoState.remain / POMO[pomoState.mode]);
+  $('#pomoMode').textContent = pomoState.mode === 'focus' ? 'FOCUS · 专注' : 'BREAK · 休息';
+  $('#pomoCount').textContent = '今日已完成 🍅 × ' + pomoRecord.count;
+  $('#pomoToggle').textContent = pomoState.running ? '⏸ 暂停' : '▶ 开始';
+  $$('.chip-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === pomoState.mode));
+  $('#ringFg').setAttribute('stroke', pomoState.mode === 'focus' ? 'url(#gradFocus)' : 'url(#gradBreak)');
+}
+function pomoPause() {
+  pomoState.running = false;
+  clearInterval(pomoState.timer);
+  document.title = DOC_TITLE;
+}
+function switchMode(m) {
+  pomoState.mode = m;
+  pomoState.remain = POMO[m];
+  renderPomo();
+}
+function pomoStep() {
+  const now = performance.now();
+  const dt = (now - pomoState.last) / 1000;
+  pomoState.last = now;
+  pomoState.remain -= dt;
+  if (pomoState.remain <= 0) { pomoState.remain = 0; renderPomo(); pomoFinish(); return; }
+  renderPomo();
+}
+function pomoFinish() {
+  pomoPause();
+  beep();
+  if (pomoState.mode === 'focus') {
+    pomoRecord.count++;
+    store.set(pomoKey, pomoRecord);
+    toast('专注完成！起来活动一下吧 🌿');
+    switchMode('break');
+  } else {
+    toast('休息结束，开启新一轮专注吧 ⚡');
+    switchMode('focus');
+  }
+}
+$('#pomoToggle').addEventListener('click', () => {
+  if (pomoState.running) { pomoPause(); }
+  else {
+    pomoState.running = true;
+    pomoState.last = performance.now();
+    pomoState.timer = setInterval(pomoStep, 200);
+  }
+  renderPomo();
+});
+$('#pomoReset').addEventListener('click', () => {
+  pomoPause();
+  pomoState.remain = POMO[pomoState.mode];
+  renderPomo();
+});
+$$('.chip-btn').forEach(b => b.addEventListener('click', () => { pomoPause(); switchMode(b.dataset.mode); }));
+setInterval(() => {
+  if (pomoState.running) {
+    document.title = fmt(pomoState.remain) + ' ' + (pomoState.mode === 'focus' ? '专注中' : '休息中') + ' · 星屿';
+  }
+}, 500);
+renderPomo();
+
+/* 提示音（WebAudio 合成，无需外部文件） */
+let audioCtx = null;
+function beep() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t = audioCtx.currentTime;
+    [[880, 0], [1174.66, 0.18]].forEach(pair => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = pair[0];
+      g.gain.setValueAtTime(0.0001, t + pair[1]);
+      g.gain.exponentialRampToValueAtTime(0.22, t + pair[1] + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + pair[1] + 0.34);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t + pair[1]); o.stop(t + pair[1] + 0.4);
+    });
+  } catch (e) {}
+}
+
+/* ---------- 随手记（自动保存） ---------- */
+const noteKey = 'aurora.note.v1';
+const noteArea = $('#noteArea');
+noteArea.value = store.get(noteKey, '');
+let noteTimer = null, statusTimer = null;
+function updateNoteCount() {
+  $('#noteCount').textContent = noteArea.value.length + ' 字';
+}
+noteArea.addEventListener('input', () => {
+  updateNoteCount();
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => {
+    store.set(noteKey, noteArea.value);
+    const st = $('#noteStatus');
+    st.style.opacity = '1';
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => { st.style.opacity = '0'; }, 1600);
+  }, 500);
+});
+updateNoteCount();
+
+/* ---------- 今日配色（黄金角和声生成） ---------- */
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const to = x => Math.round(255 * x).toString(16).padStart(2, '0');
+  return '#' + to(f(0)) + to(f(8)) + to(f(4));
+}
+function hueOf(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255,
+        g = parseInt(hex.slice(3, 5), 16) / 255,
+        b = parseInt(hex.slice(5, 7), 16) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+  if (mx === mn) return 0;
+  const d = mx - mn;
+  let h;
+  if (mx === r) h = ((g - b) / d) % 6;
+  else if (mx === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  return ((h * 60) % 360 + 360) % 360;
+}
+const PAL_NAMES = [
+  [15,'绯红日落'],[35,'琥珀暖阳'],[55,'蜂蜜金秋'],[80,'青柠汽水'],
+  [105,'森林晨雾'],[150,'薄荷冰川'],[180,'浅海碧波'],[205,'深海极光'],
+  [230,'星夜蓝调'],[260,'暮紫幻想'],[290,'鸢尾花园'],[325,'蔷薇黄昏'],
+  [345,'胭脂晚霞']
+];
+function palName(h) {
+  h = ((h % 360) + 360) % 360;
+  let name = PAL_NAMES[0][1];
+  for (let i = 0; i < PAL_NAMES.length; i++) {
+    if (h >= PAL_NAMES[i][0]) name = PAL_NAMES[i][1];
+  }
+  return name;
+}
+let palette = [];
+function genPalette() {
+  const base = Math.random() * 360;
+  palette = [0, 1, 2, 3, 4].map(i =>
+    hslToHex((base + i * 137.508) % 360, 62 + (i * 29) % 22, [64, 52, 72, 58, 46][i])
+  );
+  renderPalette();
+}
+function renderPalette() {
+  $('#swatches').innerHTML = palette.map(c =>
+    '<button class="swatch" data-hex="' + c + '" style="background:' + c + '" title="点击复制 ' + c + '">' +
+      c.toUpperCase() +
+    '</button>').join('');
+  $('#palName').textContent = '「' + palName(hueOf(palette[0])) + '」· 点击色块复制 HEX';
+}
+$('#swatches').addEventListener('click', e => {
+  const b = e.target.closest('.swatch');
+  if (b) copyText(b.dataset.hex);
+});
+$('#palRegen').addEventListener('click', () => { genPalette(); toast('已生成新的配色 🎨'); });
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => toast('已复制 ' + text))
+      .catch(() => copyFallback(text));
+  } else copyFallback(text);
+}
+function copyFallback(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('已复制 ' + text); }
+  catch (e) { toast('复制失败，请手动复制'); }
+  ta.remove();
+}
+genPalette();
+
+/* ---------- 星野粒子 + 鼠标光晕 ---------- */
+const canvas = $('#stars');
+if (canvas && !reduceMotion && canvas.getContext) {
+  const ctx = canvas.getContext('2d');
+  const glow = $('#glow');
+  let W = 0, H = 0, stars = [];
+  function resizeStars() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    const count = Math.min(110, Math.floor(W * H / 16000));
+    stars = [];
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: 0.5 + Math.random() * 1.5,
+        vx: (Math.random() - 0.5) * 0.12, vy: (Math.random() - 0.5) * 0.08,
+        p: Math.random() * Math.PI * 2,
+        hue: [190, 215, 265, 320, 45][(Math.random() * 5) | 0]
+      });
+    }
+  }
+  resizeStars();
+  window.addEventListener('resize', resizeStars);
+
+  let mx = 0, my = 0, tx = 0, ty = 0;
+  let gx = -9999, gy = -9999, gxt = -9999, gyt = -9999;
+  window.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    tx = (e.clientX / W - 0.5) * 22;
+    ty = (e.clientY / H - 0.5) * 22;
+    gxt = e.clientX - 260; gyt = e.clientY - 260;
+  });
+
+  (function frame() {
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      s.x += s.vx; s.y += s.vy; s.p += 0.018;
+      if (s.x < -5) s.x = W + 5; else if (s.x > W + 5) s.x = -5;
+      if (s.y < -5) s.y = H + 5; else if (s.y > H + 5) s.y = -5;
+      const a = 0.28 + 0.4 * Math.abs(Math.sin(s.p));
+      ctx.beginPath();
+      ctx.fillStyle = 'hsla(' + s.hue + ',95%,78%,' + a.toFixed(3) + ')';
+      ctx.arc(s.x + tx * s.r * 0.6, s.y + ty * s.r * 0.6, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    gx += (gxt - gx) * 0.1;
+    gy += (gyt - gy) * 0.1;
+    glow.style.transform = 'translate(' + gx + 'px,' + gy + 'px)';
+    requestAnimationFrame(frame);
+  })();
+} else if ($('#glow')) {
+  $('#glow').style.display = 'none';
+}
+</script>
+</body>
+</html>
 
