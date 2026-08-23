@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互动流光时钟</title>
+    <style>
+        /* --- 基础样式 --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* 画布在底层 */
+        #canvas1 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; 
+        }
+
+        /* --- 时钟样式 (修复版) --- */
+        #clock {
+            position: fixed; /* 强制固定在窗口 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 999; /* 强制最高层级，确保不被遮挡 */
+            
+            color: #ffffff; /* 纯白文字 */
+            text-align: center;
+            pointer-events: none; /* 鼠标穿透 */
+            user-select: none;
+            
+            /* 删除了 mix-blend-mode，确保清晰可见 */
+            /* 增加一点文字阴影，防止粒子太亮时看不清字 */
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        #time {
+            font-size: 15vw; /* 使用视窗单位，手机/电脑自动缩放大小 */
+            line-height: 1;
+            font-weight: bold;
+            letter-spacing: 5px;
+        }
+
+        #date {
+            font-size: 3vw;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        /* 底部提示 */
+        .instruction {
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+            z-index: 999;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="clock">
+        <div id="time">00:00:00</div>
+        <div id="date">Loading...</div>
+    </div>
+
+    <div class="instruction">
+        <p>滑动鼠标 / 点击屏幕</p>
+    </div>
+
+    <canvas id="canvas1"></canvas>
+
+    <script>
+        /**
+         * 1. 时钟逻辑
+         */
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const weekArr = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            const week = weekArr[now.getDay()];
+
+            // 更新页面文字
+            const timeEl = document.getElementById('time');
+            const dateEl = document.getElementById('date');
+            
+            if(timeEl && dateEl) {
+                timeEl.textContent = `${hours}:${minutes}:${seconds}`;
+                dateEl.textContent = `${year}-${month}-${day} ${week}`;
+            }
+        }
+        // 立即运行一次，然后每秒更新
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        /**
+         * 2. 粒子动画逻辑
+         */
+        const canvas = document.getElementById('canvas1');
+        const ctx = canvas.getContext('2d');
+        const clockEl = document.getElementById('clock'); 
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particlesArray = [];
+        let hue = 0;
+
+        window.addEventListener('resize', function(){
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const mouse = {
+            x: undefined,
+            y: undefined,
+        }
+
+        canvas.addEventListener('click', function(event){
+            mouse.x = event.x;
+            mouse.y = event.y;
+            for(let i = 0; i < 10; i++){
+                particlesArray.push(new Particle());
+            }
+        });
+
+        canvas.addEventListener('mousemove', function(event){
+            mouse.x = event.x;
+            mouse.y = event.y;
+            for(let i = 0; i < 2; i++){
+                particlesArray.push(new Particle());
+            }
+        });
+
+        class Particle {
+            constructor(){
+                this.x = mouse.x;
+                this.y = mouse.y;
+                this.size = Math.random() * 10 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = 'hsl(' + hue + ', 100%, 50%)';
+            }
+            update(){
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+            }
+            draw(){
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function handleParticles(){
+            for (let i = 0; i < particlesArray.length; i++){
+                particlesArray[i].update();
+                particlesArray[i].draw();
+
+                for (let j = i; j < particlesArray.length; j++){
+                    const dx = particlesArray[i].x - particlesArray[j].x;
+                    const dy = particlesArray[i].y - particlesArray[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 100){
+                        ctx.beginPath();
+                        ctx.strokeStyle = particlesArray[i].color;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                        ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                }
+                if (particlesArray[i].size <= 0.3){
+                    particlesArray.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        function animate(){
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            handleParticles();
+            hue += 2; 
+            
+            // 同步时钟颜色
+            if(clockEl) {
+                clockEl.style.color = 'hsl(' + hue + ', 100%, 70%)';
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
