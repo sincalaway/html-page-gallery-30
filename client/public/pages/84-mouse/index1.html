@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人生旅程 - 交互版</title>
+    <style>
+        /* --- 基础样式 --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
+        
+        /* 背景画布 */
+        #canvas1 { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        /* --- 1. 输入面板样式 --- */
+        #setup-panel {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            text-align: center;
+            color: white;
+            background: rgba(0, 0, 0, 0.6); /* 半透明黑底 */
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            transition: opacity 0.5s ease;
+        }
+
+        #setup-panel h2 { margin-bottom: 20px; font-weight: normal; letter-spacing: 2px; }
+
+        .input-group { margin-bottom: 20px; }
+        
+        input {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 1.2rem;
+            margin: 5px;
+            border-radius: 5px;
+            outline: none;
+            text-align: center;
+        }
+        
+        /* 修改日期控件的图标颜色（仅限Chrome/Edge） */
+        input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+        button#start-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid white;
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            border-radius: 30px;
+        }
+
+        button#start-btn:hover { background: white; color: black; box-shadow: 0 0 15px white; }
+
+        /* --- 2. 时钟显示面板 (初始隐藏) --- */
+        #clock-panel {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 999;
+            color: #ffffff;
+            text-align: center;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 255, 255, 0.5);
+            width: 100%;
+            display: none; /* 一开始隐藏 */
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #label { font-size: 1.5rem; margin-bottom: 20px; opacity: 0.8; letter-spacing: 3px; }
+        #time { font-size: 5vw; line-height: 1.2; font-weight: bold; letter-spacing: 2px; }
+        
+        /* 底部提示 */
+        .instruction {
+            position: fixed; bottom: 30px; width: 100%; text-align: center;
+            color: rgba(255, 255, 255, 0.3); font-size: 12px; z-index: 999; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="setup-panel">
+        <h2>输入你的登陆时间</h2>
+        <div class="input-group">
+            <input type="date" id="input-date">
+            <input type="time" id="input-time" value="00:00">
+        </div>
+        <button id="start-btn">开启旅程</button>
+    </div>
+
+    <div id="clock-panel">
+        <div id="label">已在这个世界探索</div>
+        <div id="time">Loading...</div>
+    </div>
+
+    <div class="instruction">
+        <p>每一秒都是经验值的积累 (+1 EXP)</p>
+    </div>
+
+    <canvas id="canvas1"></canvas>
+
+    <script>
+        /**
+         * === 核心逻辑：输入与计算 ===
+         */
+        let birthDate = null;
+        let timerInterval = null;
+
+        // 获取元素
+        const setupPanel = document.getElementById('setup-panel');
+        const clockPanel = document.getElementById('clock-panel');
+        const startBtn = document.getElementById('start-btn');
+        const inputDate = document.getElementById('input-date');
+        const inputTime = document.getElementById('input-time');
+
+        // 点击开始按钮
+        startBtn.addEventListener('click', function() {
+            const dateVal = inputDate.value;
+            const timeVal = inputTime.value;
+
+            if (!dateVal) {
+                alert("请先选择出生日期，指挥官。");
+                return;
+            }
+
+            // 组合日期和时间字符串
+            const fullTimeStr = `${dateVal}T${timeVal}`;
+            birthDate = new Date(fullTimeStr);
+
+            // 隐藏输入框，显示时钟
+            setupPanel.style.opacity = '0';
+            setTimeout(() => {
+                setupPanel.style.display = 'none';
+                clockPanel.style.display = 'block';
+                // 强制重绘后淡入
+                requestAnimationFrame(() => {
+                    clockPanel.style.opacity = '1';
+                });
+                
+                // 启动计时
+                updateClock();
+                timerInterval = setInterval(updateClock, 1000);
+            }, 500);
+        });
+
+        // 计时器函数
+        function updateClock() {
+            if (!birthDate) return;
+
+            const now = new Date();
+            const diff = now - birthDate;
+
+            // 如果日期在未来（还没出生？）
+            if (diff < 0) {
+                document.getElementById('time').innerHTML = "等待降临...";
+                return;
+            }
+
+            const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+            const days = Math.floor((diff % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            const h = String(hours).padStart(2, '0');
+            const m = String(minutes).padStart(2, '0');
+            const s = String(seconds).padStart(2, '0');
+
+            document.getElementById('time').innerHTML = `
+                <span style="font-size: 1.2em">${years}</span> 年 
+                <span style="font-size: 1.2em">${days}</span> 天 <br>
+                ${h} : ${m} : ${s}
+            `;
+        }
+
+
+        /**
+         * === 背景粒子特效 (保持原样) ===
+         */
+        const canvas = document.getElementById('canvas1');
+        const ctx = canvas.getContext('2d');
+        const clockEl = document.getElementById('clock-panel'); // 绑定到新的时钟面板
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particlesArray = [];
+        let hue = 0;
+
+        window.addEventListener('resize', function(){
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const mouse = { x: undefined, y: undefined }
+
+        canvas.addEventListener('click', function(event){
+            mouse.x = event.x;
+            mouse.y = event.y;
+            for(let i = 0; i < 10; i++){
+                particlesArray.push(new Particle());
+            }
+        });
+
+        canvas.addEventListener('mousemove', function(event){
+            mouse.x = event.x;
+            mouse.y = event.y;
+            for(let i = 0; i < 2; i++){
+                particlesArray.push(new Particle());
+            }
+        });
+
+        class Particle {
+            constructor(){
+                this.x = mouse.x;
+                this.y = mouse.y;
+                this.size = Math.random() * 10 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = 'hsl(' + hue + ', 100%, 50%)';
+            }
+            update(){
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+            }
+            draw(){
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function handleParticles(){
+            for (let i = 0; i < particlesArray.length; i++){
+                particlesArray[i].update();
+                particlesArray[i].draw();
+
+                for (let j = i; j < particlesArray.length; j++){
+                    const dx = particlesArray[i].x - particlesArray[j].x;
+                    const dy = particlesArray[i].y - particlesArray[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 100){
+                        ctx.beginPath();
+                        ctx.strokeStyle = particlesArray[i].color;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                        ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                }
+                if (particlesArray[i].size <= 0.3){
+                    particlesArray.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        function animate(){
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            handleParticles();
+            hue += 2; 
+            // 只有当时钟面板显示时，才改变颜色
+            if(clockEl && clockEl.style.display !== 'none') {
+                clockEl.style.color = 'hsl(' + hue + ', 100%, 80%)';
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
